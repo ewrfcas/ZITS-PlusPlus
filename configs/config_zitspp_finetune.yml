@@ -1,0 +1,104 @@
+train_flist: 'places2/train_list.txt'
+val_flist: '/home/wmlce/places365_standard/places2_all/test_sub_list.txt'
+test_path: '/home/wmlce/places365_standard/val_512img_for_eval'
+
+train_mask_flist: [ '/home/wmlce/irregular_mask/irregular_lama_mask_list.txt',
+                    '/home/wmlce/coco_mask/coco_mask_list.txt' ]
+test_mask_flist: '/home/wmlce/Image-Transformer-Inpainting/data/indoor/test_mask'
+
+batch_size: 12                 # input batch size for training
+num_workers: 12
+sample_size: 12
+fp16: false
+
+# Dataset settings
+data_class: 'base.dataset.DynamicDataset_gradient_line'
+dataset:
+  rect_mask_rate: 0.0
+  train_line_path: "places2_train_wireframes"
+  eval_line_path: "places2_val_wireframes"
+  round: 64
+  str_size: 256
+  input_size: 512  # size for eval
+
+# model settings
+structure_upsample_class: 'networks.upsample.StructureUpsampling4'
+edgeline_tsr_class: 'networks.tsr.EdgeLineGPT256RelBCE_edge_pred_infer'
+grad_tsr_class: 'networks.tsr.GradientGPT256RelBCE'
+PLTrainer: 'trainers.pl_trainers.FinetunePLTrainer_nms_threshold'
+
+g_class: 'networks.generators.FTRModel'
+g_args:
+  use_gradient: False
+  use_GFBlock: False
+  activation: 'swish'
+  use_VAN_between_FFC: False
+  van_kernel_size: 21
+  van_dilation: 3
+  prior_ch: 3
+  rezero_for_mpe: True
+  rel_pos_num: 128
+
+d_class: 'networks.discriminators.NLayerDiscriminator'
+d_args:
+  input_nc: 3
+
+
+# pretrained ckpt settings
+# resume_structure_upsample: '/mnt/storage/dongqiaole/dql_inpainting/CNN_final/ckpt/StructureUpsampling_V5_last.pth'
+# resume_edgeline_tsr: '/mnt/storage/dongqiaole/dql_inpainting/Transformer_final_places2/ckpt/places2_line_cats_edge_pred_infer/best.pth'
+# resume_grad_tsr: '/mnt/storage/dongqiaole/dql_inpainting/Transformer_final_places2/ckpt/places2_gradient/best.pth'
+# resume_ftr: '/mnt/storage/dongqiaole/dql_inpainting/TPAMI2022-final/ckpts/Places2_lightning_converted_weights/converted_from_pl_800k_3sfe.pth'
+
+resume_structure_upsample: '/home/wmlce/dql_inpainting/CNN_final/ckpt/StructureUpsampling_V5_last.pth'
+resume_edgeline_tsr: '/home/wmlce/dql_inpainting/Transformer_final_places2/ckpt/places2_line_cats_edge_pred_infer/best.pth'
+resume_grad_tsr: '/home/wmlce/dql_inpainting/Transformer_final_places2/ckpt/places2_gradient/best.pth'
+resume_ftr: '/home/wmlce/dongqiaole/dql_inpainting/TPAMI2022-final/ckpts/Places2_lightning_converted_weights/converted_from_pl_800k_3sfe.pth'
+
+
+# Trainer settings
+trainer:
+  fix_256: False
+  Turning_Point: 10000
+  total_step: 150000
+  sample_period: 1000
+  eval_period: 2000
+  save_period: 1000
+  logging_every: 50
+  ema_beta: 0.995
+  sample_with_center_mask: false
+  # loss
+  l1:
+    use_l1: true
+    weight_missing: 0
+    weight_known: 10.0
+  adversarial:
+    weight: 10.0
+    gp_coef: 0.001
+    mask_as_fake_target: true
+    allow_scale_mask: true
+    extra_mask_weight_for_gen: 0.0
+    use_unmasked_for_gen: true
+    use_unmasked_for_discr: true
+    mask_scale_mode: 'maxpool'
+  perceptual:
+    weight: 0
+  resnet_pl:
+    weight: 30.0
+    weights_path: '/home/wmlce/dql_inpainting'
+  feature_matching:
+    weight: 100.0
+
+# opt settings
+optimizer:
+  warmup_steps: 0
+  decay_steps: [50000, 100000]
+  decay_rate: 0.5
+  g_opt:
+    lr: 3.0e-4
+    beta1: 0
+    beta2: 0.99
+  d_opt:
+    lr: 1.0e-4
+    beta1: 0
+    beta2: 0.99

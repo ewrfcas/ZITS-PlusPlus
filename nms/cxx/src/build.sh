@@ -1,0 +1,1 @@
+g++ solve.cc nms.cc csa.cc kofn.cc Random.cc Exception.cc String.cc -v -fPIC -DNOBLAS -shared -o ../lib/solve_csa.so
