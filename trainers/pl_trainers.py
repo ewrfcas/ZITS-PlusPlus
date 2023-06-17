@@ -394,7 +394,8 @@ class FinetunePLTrainer(ptl.LightningModule):
     Trainer class
     """
 
-    def __init__(self, structure_upsample, edgeline_tsr, grad_tsr, ftr, D, config, out_path, num_gpus=1, use_ema=False, dynamic_size=False):
+    def __init__(self, structure_upsample, edgeline_tsr, grad_tsr, ftr, D, config, out_path, num_gpus=1, use_ema=False,
+                 dynamic_size=False, test_only=False):
         super().__init__()
         self.structure_upsample = structure_upsample
         self.structure_upsample.requires_grad_(False).eval()
@@ -429,12 +430,13 @@ class FinetunePLTrainer(ptl.LightningModule):
         os.makedirs(self.eval_path, exist_ok=True)
         os.makedirs(self.model_path, exist_ok=True)
         self.test_path = config['test_path']
+        self.test_only = test_only
 
         # adv loss
         self.adv_args = self.config['adversarial']
 
         # loss
-        if self.config.get("resnet_pl", {"weight": 0})['weight'] > 0:
+        if not test_only and self.config.get("resnet_pl", {"weight": 0})['weight'] > 0:
             self.loss_resnet_pl = ResNetPL(**self.config['resnet_pl']).to(self.device)
         else:
             self.loss_resnet_pl = None
@@ -875,8 +877,8 @@ class FinetunePLTrainer_nms_threshold(FinetunePLTrainer):
     Trainer class
     """
 
-    def __init__(self, structure_upsample, edgeline_tsr, grad_tsr, ftr, D, config, out_path, num_gpus=1, use_ema=False, dynamic_size=False, gpu_id=1):
-        super().__init__(structure_upsample, edgeline_tsr, grad_tsr, ftr, D, config, out_path, num_gpus, use_ema, dynamic_size)
+    def __init__(self, structure_upsample, edgeline_tsr, grad_tsr, ftr, D, config, out_path, num_gpus=1, use_ema=False, dynamic_size=False, gpu_id=1, test_only=False):
+        super().__init__(structure_upsample, edgeline_tsr, grad_tsr, ftr, D, config, out_path, num_gpus, use_ema, dynamic_size, test_only)
         self.gpu_id = gpu_id
 
     def sample(self, upload_img, upload_mask, output_name, lama_res):

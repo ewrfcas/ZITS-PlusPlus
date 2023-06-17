@@ -117,7 +117,8 @@ def main(args, config):
         config.config['PLTrainer'] = 'trainers.pl_trainers.FinetunePLTrainer'
 
     model = get_obj_by_name(config['PLTrainer'])(structure_upsample, edgeline_tsr, grad_tsr, ftr, D, config,
-                                                 'ckpts/' + args.exp_name, use_ema=args.use_ema, dynamic_size=args.dynamic_size)
+                                                 'ckpts/' + args.exp_name, use_ema=args.use_ema, dynamic_size=args.dynamic_size,
+                                                 test_only=True)
 
     if args.use_ema:
         model.reset_ema()
