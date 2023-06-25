@@ -50,7 +50,9 @@ CUDA_VISIBLE_DEVICES=0 python test.py --config configs/config_zitspp.yml \
                                       --img_dir <input image path> \
                                       --mask_dir <input mask path> \
                                       --wf_ckpt ckpts/best_lsm_hawp.pth \
-                                      --use_ema
+                                      --use_ema \
+                                      --test_size 256 \
+                                      --object_removal # optional
 ```
 
 512 images
@@ -62,7 +64,9 @@ CUDA_VISIBLE_DEVICES=0 python test.py --config configs/config_zitspp_finetune.ym
                                       --img_dir <input image path> \
                                       --mask_dir <input mask path> \
                                       --wf_ckpt ckpts/best_lsm_hawp.pth \
-                                      --use_ema 
+                                      --use_ema \
+                                      --test_size 512 \
+                                      --object_removal # optional
 ```
 
 ## Acknowledgments

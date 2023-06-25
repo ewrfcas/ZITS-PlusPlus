@@ -13,6 +13,7 @@ from tqdm import tqdm
 from base.parse_config import ConfigParser
 from dnnlib.util import get_obj_by_name
 from trainers.nms_temp import get_nms as get_np_nms
+from inpainting_metric import get_inpainting_metrics
 
 
 def resize(img, height, width, center_crop=False):
@@ -142,16 +143,26 @@ def main(args, config):
     os.makedirs(args.save_path, exist_ok=True)
 
     # dataset
-    data = glob(args.img_dir + '/*')
-    data = sorted(data, key=lambda x: x.split('/')[-1])
+    if args.img_dir.endswith(".txt"):
+        with open(args.img_dir, 'r') as f:
+            data = f.readlines()
+        data = [d.strip() for d in data]
+    else:
+        data = glob(args.img_dir + '/*')
+        data = sorted(data, key=lambda x: x.split('/')[-1])
 
     mask_list = glob(args.mask_dir + '/*')
     mask_list = sorted(mask_list, key=lambda x: x.split('/')[-1])
+
+    print('Image num:', len(data))
+    print('Mask num:', len(mask_list))
 
     with torch.no_grad():
         for index in tqdm(range(len(data))):
             # load image
             img = cv2.imread(data[index])
+            if args.test_size is not None:
+                img = resize(img, args.test_size, args.test_size)
             img = img[:, :, ::-1]
             # resize/crop if needed
             imgh, imgw, _ = img.shape
@@ -165,8 +176,6 @@ def main(args, config):
 
             mask_256 = cv2.resize(mask, (256, 256), interpolation=cv2.INTER_AREA)
             mask_256[mask_256 > 0] = 255
-
-            selected_img_name = data[index]
 
             # load gradient
             img_gray = rgb2gray(img_256) * 255
@@ -188,9 +197,6 @@ def main(args, config):
             batch['gradientx_hr'] = torch.from_numpy(sobelx_hr).unsqueeze(0).float()
             batch['gradienty_hr'] = torch.from_numpy(sobely_hr).unsqueeze(0).float()
 
-            # batch['line'] = to_tensor(line)
-            # batch['line_256'] = to_tensor(line_256)
-
             # load line
             from trainers.pl_trainers import wf_inference_test
             img_512 = to_tensor(img_512)
@@ -198,7 +204,7 @@ def main(args, config):
             mask_512 = (mask_512 > 127).astype(np.uint8) * 255
             mask_512 = to_tensor(mask_512)
             line_256 = wf_inference_test(model.wf, img_512[None].cuda(), h=256, w=256, masks=mask_512[None].cuda(),
-                                         valid_th=0.85, mask_th=0.85)
+                                         valid_th=0.85, mask_th=0.85, obj_remove=args.obj_removal)
             batch['line_256'] = line_256[0]
             batch['size_ratio'] = -1
 
@@ -266,12 +272,22 @@ def main(args, config):
             gen_ema_img = (gen_ema_img + 1) / 2
             gen_ema_img = gen_ema_img * 255.0
             gen_ema_img = gen_ema_img.permute(0, 2, 3, 1).int().cpu().numpy()
-            edge_res = (batch['edge'] * 255.0).permute(0, 2, 3, 1).int().cpu().numpy()
-            edge_res = np.tile(edge_res, [1, 1, 1, 3])
-            masked_img = (batch['image'] * (1 - batch['mask']) + 1) / 2 * 255
-            masked_img = masked_img.permute(0, 2, 3, 1).int().cpu().numpy()
-            final_res = np.concatenate([masked_img, edge_res, gen_ema_img], axis=2)
+            if not args.save_image_only:
+                edge_res = (batch['edge'] * 255.0).permute(0, 2, 3, 1).int().cpu().numpy()
+                edge_res = np.tile(edge_res, [1, 1, 1, 3])
+                line_res = (batch['line'] * 255.0).permute(0, 2, 3, 1).int().cpu().numpy()
+                line_res = np.tile(line_res, [1, 1, 1, 3])
+                masked_img = (batch['image'] * (1 - batch['mask']) + 1) / 2 * 255
+                masked_img = masked_img.permute(0, 2, 3, 1).int().cpu().numpy()
+                final_res = np.concatenate([masked_img, edge_res, line_res, gen_ema_img], axis=2)
+            else:
+                final_res = gen_ema_img
             cv2.imwrite(args.save_path + '/' + batch['name'], final_res[0, :, :, ::-1])
+
+    if args.eval:
+        res = get_inpainting_metrics(args.eval_path, args.save_path, get_fid=True)
+        for k in res:
+            print(k, res[k])
 
 
 if __name__ == '__main__':
@@ -285,6 +301,11 @@ if __name__ == '__main__':
     args.add_argument('--save_path', default='outputs', type=str, help='path to save')
     args.add_argument('--img_dir', type=str, default=None, help='Test image path')
     args.add_argument('--mask_dir', type=str, default=None, help='Mask path')
+    args.add_argument('--test_size', type=int, default=None, help='Test image size')
+    args.add_argument('--eval', action='store_true', help='Whether to eval?')
+    args.add_argument('--save_image_only', action='store_true', help='Only save image')
+    args.add_argument('--obj_removal', action='store_true', help='obj_removal')
+    args.add_argument('--eval_path', type=str, default=None, help='Eval gt image path')
 
     # custom cli options to modify configuration from default values given in json file.
     args = args.parse_args()
