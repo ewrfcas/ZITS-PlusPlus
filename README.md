@@ -1,7 +1,8 @@
 # ZITS-PlusPlus
 ZITS++: Image Inpainting by Improving the Incremental Transformer on Structural Priors (TPAMI2023)
 
-[arxiv paper](https://arxiv.org/abs/2210.05950)
+[arxiv paper](https://arxiv.org/abs/2210.05950),
+[project page](https://ewrfcas.github.io/ZITS-PlusPlus/)
 
 [ZITS: CVPR2022 Version](https://github.com/DQiaole/ZITS_inpainting)
 
