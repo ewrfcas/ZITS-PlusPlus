@@ -7,7 +7,10 @@ import numpy as np
 import torch
 from scipy import linalg
 from skimage.color import rgb2gray
-from skimage.measure import compare_ssim
+try:
+    from skimage.measure import compare_ssim
+except:
+    from skimage.metrics import structural_similarity as compare_ssim
 from torch.autograd import Variable
 from torch.nn.functional import adaptive_avg_pool2d
 from tqdm import tqdm

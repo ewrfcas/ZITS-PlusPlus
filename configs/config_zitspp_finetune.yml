@@ -1,10 +1,11 @@
-train_flist: 'places2/train_list.txt'
-val_flist: '/home/wmlce/places365_standard/places2_all/test_sub_list.txt'
-test_path: '/home/wmlce/places365_standard/val_512img_for_eval'
+train_flist: '/your_data_path/places365_standard/places2_all/train_list.txt'
+val_flist: '/your_data_path/places365_standard/places2_all/test_sub_list.txt'
+test_path: '/your_data_path/places365_standard/val_256img_for_eval'
 
-train_mask_flist: [ '/home/wmlce/irregular_mask/irregular_lama_mask_list.txt',
-                    '/home/wmlce/coco_mask/coco_mask_list.txt' ]
-test_mask_flist: '/home/wmlce/Image-Transformer-Inpainting/data/indoor/test_mask'
+# see https://drive.google.com/drive/folders/1eU6VaTWGdgCXXWueCXilt6oxHdONgUgf?usp=sharing for downloading masks
+train_mask_flist: [ '/your_mask_path/irregular_mask/irregular_lama_mask_list.txt',
+                    '/your_mask_path/coco_mask/coco_mask_list.txt' ]
+test_mask_flist: '/your_mask_path/test_mask'
 
 batch_size: 12                 # input batch size for training
 num_workers: 12
@@ -45,15 +46,10 @@ d_args:
 
 
 # pretrained ckpt settings
-# resume_structure_upsample: '/mnt/storage/dongqiaole/dql_inpainting/CNN_final/ckpt/StructureUpsampling_V5_last.pth'
-# resume_edgeline_tsr: '/mnt/storage/dongqiaole/dql_inpainting/Transformer_final_places2/ckpt/places2_line_cats_edge_pred_infer/best.pth'
-# resume_grad_tsr: '/mnt/storage/dongqiaole/dql_inpainting/Transformer_final_places2/ckpt/places2_gradient/best.pth'
-# resume_ftr: '/mnt/storage/dongqiaole/dql_inpainting/TPAMI2022-final/ckpts/Places2_lightning_converted_weights/converted_from_pl_800k_3sfe.pth'
-
-resume_structure_upsample: '/home/wmlce/dql_inpainting/CNN_final/ckpt/StructureUpsampling_V5_last.pth'
-resume_edgeline_tsr: '/home/wmlce/dql_inpainting/Transformer_final_places2/ckpt/places2_line_cats_edge_pred_infer/best.pth'
-resume_grad_tsr: '/home/wmlce/dql_inpainting/Transformer_final_places2/ckpt/places2_gradient/best.pth'
-resume_ftr: '/home/wmlce/dongqiaole/dql_inpainting/TPAMI2022-final/ckpts/Places2_lightning_converted_weights/converted_from_pl_800k_3sfe.pth'
+resume_structure_upsample: none
+resume_edgeline_tsr: none
+resume_grad_tsr: none
+resume_ftr: none
 
 
 # Trainer settings
@@ -85,7 +81,9 @@ trainer:
     weight: 0
   resnet_pl:
     weight: 30.0
-    weights_path: '/home/wmlce/dql_inpainting'
+#    mkdir -p ade20k/ade20k-resnet50dilated-ppm_deepsup/
+#    wget -P ade20k/ade20k-resnet50dilated-ppm_deepsup/ http://sceneparsing.csail.mit.edu/model/pytorch/ade20k-resnet50dilated-ppm_deepsup/encoder_epoch_20.pth
+    weights_path: './'
   feature_matching:
     weight: 100.0
 
