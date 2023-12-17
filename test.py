@@ -1,20 +1,20 @@
 import argparse
 import os
-import utils
 
 import cv2
 import numpy as np
 import torch.nn.functional as FF
 import torch.nn.parallel
+from torch.utils.data.dataloader import DataLoader
 from tqdm import tqdm
 
+import utils
 from base.parse_config import ConfigParser
-from dnnlib.util import get_obj_by_name
-from trainers.nms_temp import get_nms as get_np_nms
-from inpainting_metric import get_inpainting_metrics
-from trainers.pl_trainers import wf_inference_test
 from dataset.dataloader import InpaintingDataset
-from torch.utils.data.dataloader import DataLoader
+from dnnlib.util import get_obj_by_name
+from inpainting_metric import get_inpainting_metrics
+from trainers.nms_temp import get_nms as get_np_nms
+from trainers.pl_trainers import wf_inference_test
 
 
 def main(args, config):

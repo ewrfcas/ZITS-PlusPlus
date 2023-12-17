@@ -1,11 +1,11 @@
-import cv2
 import os
+from glob import glob
+
+import cv2
 import numpy as np
 import torch
-from glob import glob
-from skimage.color import rgb2gray
-import torch.nn.functional as FF
 import torchvision.transforms.functional as F
+from skimage.color import rgb2gray
 
 
 def resize(img, height, width, center_crop=False):

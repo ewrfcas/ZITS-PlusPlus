@@ -1,5 +1,6 @@
-import numpy as np
 import sys
+
+import numpy as np
 
 sys.path.insert(0, '../')
 
@@ -10,7 +11,7 @@ import torch.nn.functional as F
 from torch_utils import misc
 from torch_utils import persistence
 from networks.basic_module import FullyConnectedLayer, Conv2dLayer, MappingNet, MinibatchStdLayer, DisFromRGB, DisBlock, StyleConv, ToRGB, get_style_code
-from networks.ffc import ResnetBlock_remove_IN, SpectralTransform, FourierUnit, FourierUnitN_NoNorm
+from networks.ffc import ResnetBlock_remove_IN, FourierUnitN_NoNorm
 
 
 # @misc.profiled_function

@@ -9,9 +9,7 @@ import cv2
 import numpy as np
 import pytorch_lightning as ptl
 import skimage
-import torch
 import torch.distributed as dist
-import torch.nn.functional as F
 import torchvision.transforms.functional as TF
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler

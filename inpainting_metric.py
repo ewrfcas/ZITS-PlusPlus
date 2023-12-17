@@ -7,6 +7,7 @@ import numpy as np
 import torch
 from scipy import linalg
 from skimage.color import rgb2gray
+
 try:
     from skimage.measure import compare_ssim
 except:
